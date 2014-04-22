@@ -36,7 +36,6 @@ var stream = T.stream('statuses/filter', {track: TRACK_TEXT})
 stream.on('tweet', function (tweet) {
 	_tweetCount++;
 	if (_tweetCount < TWEET_LIMIT) {
-		console.log(tweet.id_str, tweet.text, tweet.user.id);
 		//launchQuery(tweet);
 		altQuery(tweet.text, function(location){
 			if (location) {
@@ -47,6 +46,9 @@ stream.on('tweet', function (tweet) {
 					location.feature.geometry.x, 
 					location.feature.geometry.y
 				);	
+			} else { // match failed
+				writeToLog(tweet.id_str, tweet.user.id, tweet.text, 1);
+
 			}
 		});
 	} else {
@@ -171,6 +173,11 @@ function writeRecord(tweetID, userID, standardizedLocation, x, y)
 		console.log(tweetID, ": Cannot write to feature service...");
 	}
 	
+}
+
+function writeToLog(tweetID, tweetUserID, tweetText, status, locationName, x, y)
+{
+	console.log(tweetID, tweetUserID, tweetText, status, locationName, x, y);
 }
 
 
