@@ -44,7 +44,18 @@ stream.on('tweet', function (tweet) {
 					tweet.user.id, 
 					location.name, 
 					location.feature.geometry.x, 
-					location.feature.geometry.y
+					location.feature.geometry.y,
+					function(success){
+						writeToLog(
+							tweet.id_str, 
+							tweet.user.id, 
+							tweet.text, 
+							success ? 0 : 2, 
+							location.name, 
+							location.feature.geometry.x, 
+							location.feature.geometry.y
+						);
+					}
 				);	
 			} else { // match failed
 				writeToLog(tweet.id_str, tweet.user.id, tweet.text, 1);
@@ -127,10 +138,9 @@ function parsePlaceName(text)
 	return(placeName.substring(0, idx));
 }
 
-function writeRecord(tweetID, userID, standardizedLocation, x, y)
+function writeRecord(tweetID, userID, standardizedLocation, x, y, callBack)
 {
 	try {
-		console.log(tweetID, userID, standardizedLocation, x, y);
 		var features = [
 			{
 				geometry:{x : x, y : y},
@@ -154,16 +164,25 @@ function writeRecord(tweetID, userID, standardizedLocation, x, y)
 			path: FEATURE_SERVICE.replace("http://services.arcgis.com","")+"/addFeatures",
 			headers:{"Content-Type": "application/x-www-form-urlencoded","Content-Length": postData.length}
 		}
+
+	  var result = "";	
 		
 		var req = http.request(options, function(res) {
 		  res.setEncoding('utf8');
 		  res.on('data', function (chunk) {
-			console.log('BODY: ' + chunk);
+			result = result+chunk;
+		  }).on('end', function(huh){
+			  if (JSON.parse(result).addResults) {
+				  callBack(true);
+			  } else {
+				  callBack(false);
+			  };
 		  });
 		});
 		
 		req.on('error', function(e) {
 		  console.log('problem with request: ' + e.message);
+		  callBack(false)
 		});
 		
 		req.write(postData);
@@ -171,6 +190,7 @@ function writeRecord(tweetID, userID, standardizedLocation, x, y)
 
 	} catch(err) {
 		console.log(tweetID, ": Cannot write to feature service...");
+		  callBack(false)
 	}
 	
 }
@@ -179,6 +199,3 @@ function writeToLog(tweetID, tweetUserID, tweetText, status, locationName, x, y)
 {
 	console.log(tweetID, tweetUserID, tweetText, status, locationName, x, y);
 }
-
-
-
