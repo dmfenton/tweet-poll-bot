@@ -133,7 +133,7 @@ function writeRecord(tweetID, userID, standardizedLocation, x, y)
 			{
 				geometry:{x : x, y : y},
 				spatialReference:{wkid:4326},
-				attributes:{Tweet_ID: tweetID, User_ID: userID, Standardized_Location: standardizedLocation, Short_Name: "Test", X: x, Y: y}
+				attributes:{Tweet_ID: tweetID, User_ID: userID, Standardized_Location: standardizedLocation, Short_Name: "Test", X: x, Y: y, Matched: "true", Hide: "false"}
 			}
 		];
 		
