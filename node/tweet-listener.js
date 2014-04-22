@@ -36,7 +36,6 @@ var stream = T.stream('statuses/filter', {track: TRACK_TEXT})
 stream.on('tweet', function (tweet) {
 	_tweetCount++;
 	if (_tweetCount < TWEET_LIMIT) {
-		//launchQuery(tweet);
 		altQuery(tweet.text, function(location){
 			if (location) {
 				writeRecord(
@@ -70,41 +69,6 @@ stream.on('tweet', function (tweet) {
 console.log("Tweet poll bot in de heezy!");
 console.log("Listening for "+TRACK_TEXT);
 console.log("Writing to "+FEATURE_SERVICE);
-
-
-function launchQuery(tweet)
-{
-	var errorCount = 0;
-	var opts = {
-		documentType: 'text/plain',
-		documentContent: tweet.text
-	}
-	console.log(tweet.id_str, ": attempt #", errorCount);
-	bossgeo.placespotter(opts, handler);
-	function handler(err, res) 
-	{
-		if (err) {
-			errorCount++;
-			if (errorCount < ERROR_LIMIT) {
-				console.log(tweet.id_str, ": attempt #", errorCount);
-				bossgeo.placespotter(opts, handler);
-			} else {
-				console.log(tweet.id_str, ": END : error limit reached");
-			}
-			return;
-		}
-		try {
-			var placeDetails = res.document.placedetails;
-			if ( Object.prototype.toString.call( placeDetails ) === '[object Array]' ) {
-				placeDetails = placedetails[0];
-			}
-			console.log(tweet.id_str, ": SUCCESS: ", placeDetails.place.name);
-			writeRecord(tweet.id_str, tweet.user.id, placeDetails.place.name, placeDetails.place.centroid.longitude, placeDetails.place.centroid.latitude);
-		} catch(err) {
-			console.log(tweet.id_str, ": END : yahoo couldn't match...");
-		}
-	}	
-}
 
 function altQuery(text, callBack)
 {
