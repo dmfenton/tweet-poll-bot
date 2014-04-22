@@ -129,24 +129,24 @@ function writeRecord(tweetID, userID, standardizedLocation, x, y, callBack)
 			headers:{"Content-Type": "application/x-www-form-urlencoded","Content-Length": postData.length}
 		}
 
-	  var result = "";	
+		var result = "";	
 		
 		var req = http.request(options, function(res) {
-		  res.setEncoding('utf8');
-		  res.on('data', function (chunk) {
-			result = result+chunk;
-		  }).on('end', function(huh){
-			  if (JSON.parse(result).addResults) {
+			res.setEncoding('utf8');
+			res.on('data', function (chunk) {
+				result = result+chunk;
+			}).on('end', function(huh){
+				if (JSON.parse(result).addResults) {
 				  callBack(true);
-			  } else {
+				} else {
 				  callBack(false);
-			  };
-		  });
+				};
+			});
 		});
 		
 		req.on('error', function(e) {
-		  console.log('problem with request: ' + e.message);
-		  callBack(false)
+			console.log('problem with request: ' + e.message);
+			callBack(false)
 		});
 		
 		req.write(postData);
@@ -154,7 +154,7 @@ function writeRecord(tweetID, userID, standardizedLocation, x, y, callBack)
 
 	} catch(err) {
 		console.log(tweetID, ": Cannot write to feature service...");
-		  callBack(false)
+		callBack(false)
 	}
 	
 }
