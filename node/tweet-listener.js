@@ -137,9 +137,9 @@ function writeRecord(tweetID, userID, standardizedLocation, x, y, callBack)
 				result = result+chunk;
 			}).on('end', function(huh){
 				if (JSON.parse(result).addResults) {
-				  callBack(true);
+					callBack(true);
 				} else {
-				  callBack(false);
+					callBack(false);
 				};
 			});
 		});
