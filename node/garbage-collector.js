@@ -17,7 +17,7 @@ var FEATURE_SERVICE = process.argv[6];
 var TOKEN = process.argv[7];
 var INTERVAL = process.argv[8];
 
-var QUERY_URL = FEATURE_SERVICE+"/query?where=Matched+%3D+%271%27+and+Hide+%3D+%270%27&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&outFields=Tweet_ID%2C+FID&returnGeometry=false&maxAllowableOffset=&geometryPrecision=&outSR=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&f=pjson&token=";
+var QUERY_URL = FEATURE_SERVICE+"/query?where=Matched+%3D+%271%27+and+Hide+%3D+%270%27&outFields=Tweet_ID%2C+FID&returnGeometry=false&f=pjson";
 
 var opts = {host: "services.arcgis.com", path: QUERY_URL};
 
@@ -37,7 +37,7 @@ function driver()
 			for (var i = 0; i < features.length; i++)
 			{
 				var feature = features[i];
-				check(feature.attributes.Tweet_ID, function(){hideRecord(feature.attributes.FID)});
+				check(feature.attributes.Tweet_ID, feature.attributes.FID, function(fid){hideRecord(fid)});
 			}
 		});
 	});
@@ -47,13 +47,13 @@ function driver()
 }
 
 
-function check(id, callBack)
+function check(id, fid, callBack)
 {
 	T.get('statuses/show/:id', {id:id}, function(err, reply){
 		if (err) {
 			if (err.statusCode == 404) {
 				console.log("tweet "+id+" is NOT good, and should be hidden...");
-				callBack();
+				callBack(fid);
 			} else {
 				console.log("tweet "+id+" caused an error from Twitter.");
 			}
