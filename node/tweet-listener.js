@@ -41,6 +41,7 @@ stream.on('tweet', function (tweet) {
 				writeRecord(
 					tweet.id_str, 
 					tweet.user.id, 
+					true,
 					location.name, 
 					location.feature.geometry.x, 
 					location.feature.geometry.y,
@@ -57,8 +58,25 @@ stream.on('tweet', function (tweet) {
 					}
 				);	
 			} else { // match failed
-				writeToLog(tweet.id_str, tweet.user.id, tweet.text, 1);
-
+				writeRecord(
+					tweet.id_str, 
+					tweet.user.id, 
+					false,
+					null, 
+					null, 
+					null,
+					function(success){
+						writeToLog(
+							tweet.id_str, 
+							tweet.user.id, 
+							tweet.text, 
+							success ? 0 : 2, 
+							null, 
+							null, 
+							null
+						);
+					}
+				);	
 			}
 		});
 	} else {
@@ -102,14 +120,14 @@ function parsePlaceName(text)
 	return(placeName.substring(0, idx));
 }
 
-function writeRecord(tweetID, userID, standardizedLocation, x, y, callBack)
+function writeRecord(tweetID, userID, matchStatus, standardizedLocation, x, y, callBack)
 {
 	try {
 		var features = [
 			{
 				geometry:{x : x, y : y},
 				spatialReference:{wkid:4326},
-				attributes:{Tweet_ID: tweetID, User_ID: userID, Standardized_Location: standardizedLocation, Short_Name: "Test", X: x, Y: y, Matched: "true", Hide: "false"}
+				attributes:{Tweet_ID: tweetID, User_ID: userID, Standardized_Location: standardizedLocation, Short_Name: "Test", X: x, Y: y, Matched: matchStatus, Hide: false}
 			}
 		];
 		
