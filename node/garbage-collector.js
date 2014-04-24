@@ -2,7 +2,7 @@ var http = require("http");
 var Twit = require('twit');
 var querystring = require("querystring");
 
-if (process.argv.length < 8) {
+if (process.argv.length < 9) {
 	throw("argument required");
 }
 
@@ -15,6 +15,7 @@ var T = new Twit({
 
 var FEATURE_SERVICE = process.argv[6];
 var TOKEN = process.argv[7];
+var INTERVAL = process.argv[8];
 
 var QUERY_URL = FEATURE_SERVICE+"/query?where=Matched+%3D+%271%27+and+Hide+%3D+%270%27&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&outFields=Tweet_ID%2C+FID&returnGeometry=false&maxAllowableOffset=&geometryPrecision=&outSR=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&f=pjson&token=";
 
@@ -41,7 +42,7 @@ function driver()
 		});
 	});
 	
-	setTimeout(driver, 300000);
+	setTimeout(driver, INTERVAL);
 	
 }
 
