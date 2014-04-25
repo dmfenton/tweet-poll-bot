@@ -29,7 +29,7 @@ var opts = {host: "services.arcgis.com", path: QUERY_URL};
 function driver()
 {
 	
-	console.log("Roll call", new Date());
+	console.log("Roll call:", new Date());
 	
 	var text = "";
 	
@@ -42,7 +42,7 @@ function driver()
 			for (var i = 0; i < features.length; i++)
 			{
 				var feature = features[i];
-				check(feature.attributes[FIELDNAME_TWEETID], feature.attributes[FIELDNAME_FID], function(fid){hideRecord(fid)});
+				check(feature, function(feature){hideRecord(feature.attributes[FIELDNAME_FID])});
 			}
 		});
 	});
@@ -51,14 +51,14 @@ function driver()
 	
 }
 
-
-function check(id, fid, callBack)
+function check(feature, callBack)
 {
+	var id = feature.attributes[FIELDNAME_TWEETID];
 	T.get('statuses/show/:id', {id:id}, function(err, reply){
 		if (err) {
 			if (err.statusCode == 404) {
 				console.log("tweet "+id+" is NOT good, and should be hidden...");
-				callBack(fid);
+				callBack(feature);
 			} else {
 				console.log("tweet "+id+" caused an error from Twitter.");
 			}
