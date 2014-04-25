@@ -84,16 +84,20 @@ function hideRecord(id)
 		path: FEATURE_SERVICE+"/updateFeatures",
 		headers:{"Content-Type": "application/x-www-form-urlencoded","Content-Length": postData.length}
 	}
+	
 	var req = http.request(options, function(res) {
-	  res.setEncoding('utf8');
-	  res.on('data', function (chunk) {
-		console.log('BODY: ' + chunk);
-	  });
+		res.setEncoding('utf8');
+		var json = "";
+		res.on('data', function (chunk) {
+			json = json+chunk;
+		}).on('end', function(huh) {
+			console.log(JSON.parse(json));
+		});
 	});
+	
 	req.on('error', function(e) {
 	  console.log('problem with request: ' + e.message);
 	});
-	console.log(postData);
 	req.write(postData);
 	req.end();
 }
