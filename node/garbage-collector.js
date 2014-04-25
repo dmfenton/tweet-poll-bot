@@ -17,14 +17,19 @@ var FEATURE_SERVICE = process.argv[6];
 var TOKEN = process.argv[7];
 var INTERVAL = process.argv[8];
 
-var QUERY_URL = FEATURE_SERVICE+"/query?where=Matched+%3D+%271%27+and+Hide+%3D+%270%27&outFields=Tweet_ID%2C+FID&returnGeometry=false&f=pjson";
+var FIELDNAME_MATCHED = "Matched";
+var FIELDNAME_HIDE = "Hide";
+var FIELDNAME_TWEETID = "Tweet_ID";
+var FIELDNAME_FID = "FID"; 
+
+var QUERY_URL = FEATURE_SERVICE+"/query?where="+FIELDNAME_MATCHED+"+%3D+%271%27+and+"+FIELDNAME_HIDE+"+%3D+%270%27&outFields="+FIELDNAME_TWEETID+"%2C+"+FIELDNAME_FID+"&returnGeometry=false&f=pjson";
 
 var opts = {host: "services.arcgis.com", path: QUERY_URL};
 
 function driver()
 {
 	
-	console.log(new Date());
+	console.log("Roll call", new Date());
 	
 	var text = "";
 	
@@ -37,7 +42,7 @@ function driver()
 			for (var i = 0; i < features.length; i++)
 			{
 				var feature = features[i];
-				check(feature.attributes.Tweet_ID, feature.attributes.FID, function(fid){hideRecord(fid)});
+				check(feature.attributes[FIELDNAME_TWEETID], feature.attributes[FIELDNAME_FID], function(fid){hideRecord(fid)});
 			}
 		});
 	});
