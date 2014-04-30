@@ -1,31 +1,20 @@
 var http = require("http");
 var querystring = require("querystring")
 var Twit = require('twit')
-var BossGeoClient = require('bossgeo').BossGeoClient;
 
-if (process.argv.length < 13) {
+if (process.argv.length < 8) {
 	throw("argument required");
 }
 
-var ERROR_LIMIT = process.argv[11];
-var TWEET_LIMIT = process.argv[12];
 var TRACK_TEXT = process.argv[2];
-var FEATURE_SERVICE = process.argv[3];
-var TOKEN = process.argv[10];
-
-var _tweetCount = 0;
-
 var T = new Twit({
-    consumer_key:         process.argv[4],
-    consumer_secret:      process.argv[5],
-    access_token:         process.argv[6],
-    access_token_secret:  process.argv[7]
+    consumer_key:         process.argv[3],
+    consumer_secret:      process.argv[4],
+    access_token:         process.argv[5],
+    access_token_secret:  process.argv[6]
 });
-
-var bossgeo = new BossGeoClient(
-    process.argv[8],
-    process.argv[9]
-);
+var FEATURE_SERVICE = process.argv[7];
+var TOKEN = process.argv[8];
 
 //
 // filter the public stream by desired hashtag
@@ -34,54 +23,49 @@ var bossgeo = new BossGeoClient(
 var stream = T.stream('statuses/filter', {track: TRACK_TEXT})
 
 stream.on('tweet', function (tweet) {
-	_tweetCount++;
-	if (_tweetCount < TWEET_LIMIT) {
-		altQuery(tweet.text, function(location){
-			if (location) {
-				writeRecord(
-					tweet.id_str, 
-					tweet.user.id, 
-					true,
-					location.name, 
-					location.feature.geometry.x, 
-					location.feature.geometry.y,
-					function(success){
-						writeToLog(
-							tweet.id_str, 
-							tweet.user.id, 
-							tweet.text, 
-							success ? 0 : 2, 
-							location.name, 
-							location.feature.geometry.x, 
-							location.feature.geometry.y
-						);
-					}
-				);	
-			} else { // match failed
-				writeRecord(
-					tweet.id_str, 
-					tweet.user.id, 
-					false,
-					null, 
-					null, 
-					null,
-					function(success){
-						writeToLog(
-							tweet.id_str, 
-							tweet.user.id, 
-							tweet.text, 
-							success ? 0 : 2, 
-							null, 
-							null, 
-							null
-						);
-					}
-				);	
-			}
-		});
-	} else {
-		console.log("ALL DONE HERE!!!");
-	}
+	altQuery(tweet.text, function(location){
+		if (location) {
+			writeRecord(
+				tweet.id_str, 
+				tweet.user.id, 
+				true,
+				location.name, 
+				location.feature.geometry.x, 
+				location.feature.geometry.y,
+				function(success){
+					writeToLog(
+						tweet.id_str, 
+						tweet.user.id, 
+						tweet.text, 
+						success ? 0 : 2, 
+						location.name, 
+						location.feature.geometry.x, 
+						location.feature.geometry.y
+					);
+				}
+			);	
+		} else { // match failed
+			writeRecord(
+				tweet.id_str, 
+				tweet.user.id, 
+				false,
+				null, 
+				null, 
+				null,
+				function(success){
+					writeToLog(
+						tweet.id_str, 
+						tweet.user.id, 
+						tweet.text, 
+						success ? 0 : 2, 
+						null, 
+						null, 
+						null
+					);
+				}
+			);	
+		}
+	});
 });
 
 console.log("Tweet poll bot in de heezy!");
