@@ -23,6 +23,7 @@ var TOKEN = process.argv[8];
 var stream = T.stream('statuses/filter', {track: TRACK_TEXT})
 
 stream.on('tweet', function (tweet) {
+	// to do: test for retweet.
 	altQuery(tweet.text, function(location){
 		if (location) {
 			writeRecord(
