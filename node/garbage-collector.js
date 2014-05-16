@@ -1,8 +1,10 @@
 var http = require("http");
+var https = require("https");
 var Twit = require('twit');
 var querystring = require("querystring");
+var os = require("os");
 
-if (process.argv.length < 9) {
+if (process.argv.length < 11) {
 	throw("argument required");
 }
 
@@ -14,8 +16,11 @@ var T = new Twit({
 });
 
 var FEATURE_SERVICE = process.argv[6];
-var TOKEN = process.argv[7];
-var INTERVAL = process.argv[8];
+var INTERVAL = process.argv[7];
+
+var USERNAME = process.argv[8];
+var PASSWORD = process.argv[9];
+var TOKEN_FETCH_INTERVAL_MINUTES = process.argv[10];
 
 var FIELDNAME_MATCHED = "Matched";
 var FIELDNAME_HIDE = "Hide";
@@ -23,6 +28,8 @@ var FIELDNAME_TWEETID = "Tweet_ID";
 var FIELDNAME_FID = "FID"; 
 
 var QUERY_URL = FEATURE_SERVICE+"/query?where="+FIELDNAME_MATCHED+"+%3D+%271%27+and+"+FIELDNAME_HIDE+"+%3D+%270%27&outFields="+FIELDNAME_TWEETID+"%2C+"+FIELDNAME_FID+"&returnGeometry=false&f=pjson";
+
+var TOKEN;
 
 var opts = {host: "services.arcgis.com", path: QUERY_URL};
 
@@ -102,4 +109,60 @@ function hideRecord(id)
 	req.end();
 }
 
-driver();
+function getToken(callBack)
+{
+	
+	var postData = {
+		username: USERNAME,
+		password: PASSWORD,
+		referer: os.hostname(),
+		expiration: TOKEN_FETCH_INTERVAL_MINUTES * 2,
+		f: "json"
+    };
+	
+	postData = querystring.stringify(postData);
+	
+	var options = {
+		host: "www.arcgis.com",
+		method: "POST",
+		port: 443,
+		path: "https://www.arcgis.com/sharing/rest/generateToken",
+		headers:{"Content-Type": "application/x-www-form-urlencoded","Content-Length": postData.length}
+	}
+	
+	var result = "";	
+
+	try {
+			
+		var req = https.request(options, function(res) {
+			res.setEncoding('utf8');
+			res.on('data', function (chunk) {
+				result = result+chunk;
+			}).on('end', function(huh){
+				TOKEN = JSON.parse(result).token;
+				console.log("successfully retrieved token!");
+				// do it again later			
+				setTimeout(function(){getToken()}, TOKEN_FETCH_INTERVAL_MINUTES * 60 * 1000);
+				// call back, if appropriate
+				if (callBack) callBack();
+			});
+		});
+	
+		req.on('error', function(e) {
+			console.log("uh-oh...error in token request");
+			// try again in a minute			
+			setTimeout(function(){getToken()}, 60000);
+		});
+		
+		req.write(postData);
+		req.end();
+	
+	} catch(err) {
+		console.log("problem communicating with token service...");
+		// try again in a minute			
+		setTimeout(function(){getToken()}, 60000);
+	}	
+	
+}
+
+getToken(driver);
