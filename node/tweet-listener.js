@@ -1,8 +1,10 @@
 var http = require("http");
+var https = require("https");
 var querystring = require("querystring")
 var Twit = require('twit')
+var os = require("os");
 
-if (process.argv.length < 8) {
+if (process.argv.length < 11) {
 	throw("argument required");
 }
 
@@ -13,65 +15,135 @@ var T = new Twit({
     access_token:         process.argv[5],
     access_token_secret:  process.argv[6]
 });
+
 var FEATURE_SERVICE = process.argv[7];
-var TOKEN = process.argv[8];
+var USERNAME = process.argv[8];
+var PASSWORD = process.argv[9];
+var TOKEN_FETCH_INTERVAL_MINUTES = process.argv[10];
 
-//
-// filter the public stream by desired hashtag
-//
+var TOKEN;
 
-var stream = T.stream('statuses/filter', {track: TRACK_TEXT})
+getToken(init);
 
-stream.on('tweet', function (tweet) {
-	// to do: test for retweet.
-	altQuery(tweet.text, function(location){
-		if (location) {
-			writeRecord(
-				tweet.id_str, 
-				tweet.user.id, 
-				true,
-				location.name, 
-				location.feature.geometry.x, 
-				location.feature.geometry.y,
-				function(success){
-					writeToLog(
-						tweet.id_str, 
-						tweet.user.id, 
-						tweet.text, 
-						success ? 0 : 2, 
-						location.name, 
-						location.feature.geometry.x, 
-						location.feature.geometry.y
-					);
-				}
-			);	
-		} else { // match failed
-			writeRecord(
-				tweet.id_str, 
-				tweet.user.id, 
-				false,
-				null, 
-				null, 
-				null,
-				function(success){
-					writeToLog(
-						tweet.id_str, 
-						tweet.user.id, 
-						tweet.text, 
-						success ? 0 : 2, 
-						null, 
-						null, 
-						null
-					);
-				}
-			);	
-		}
+function init()
+{
+	
+	console.log("init");
+	
+	//
+	// filter the public stream by desired hashtag
+	//
+	
+	var stream = T.stream('statuses/filter', {track: TRACK_TEXT})
+	
+	stream.on('tweet', function (tweet) {
+		// to do: test for retweet.
+		altQuery(tweet.text, function(location){
+			if (location) {
+				writeRecord(
+					tweet.id_str, 
+					tweet.user.id, 
+					true,
+					location.name, 
+					location.feature.geometry.x, 
+					location.feature.geometry.y,
+					function(success){
+						writeToLog(
+							tweet.id_str, 
+							tweet.user.id, 
+							tweet.text, 
+							success ? 0 : 2, 
+							location.name, 
+							location.feature.geometry.x, 
+							location.feature.geometry.y
+						);
+					}
+				);	
+			} else { // match failed
+				writeRecord(
+					tweet.id_str, 
+					tweet.user.id, 
+					false,
+					null, 
+					null, 
+					null,
+					function(success){
+						writeToLog(
+							tweet.id_str, 
+							tweet.user.id, 
+							tweet.text, 
+							success ? 0 : 2, 
+							null, 
+							null, 
+							null
+						);
+					}
+				);	
+			}
+		});
 	});
-});
+	
+	console.log("Tweet poll bot in de heezy!");
+	console.log("Listening for "+TRACK_TEXT);
+	console.log("Writing to "+FEATURE_SERVICE);
 
-console.log("Tweet poll bot in de heezy!");
-console.log("Listening for "+TRACK_TEXT);
-console.log("Writing to "+FEATURE_SERVICE);
+}
+
+function getToken(callBack)
+{
+	
+	var postData = {
+		username: USERNAME,
+		password: PASSWORD,
+		referer: os.hostname(),
+		expiration: TOKEN_FETCH_INTERVAL_MINUTES * 2,
+		f: "json"
+    };
+	
+	postData = querystring.stringify(postData);
+	
+	var options = {
+		host: "www.arcgis.com",
+		method: "POST",
+		port: 443,
+		path: "https://www.arcgis.com/sharing/rest/generateToken",
+		headers:{"Content-Type": "application/x-www-form-urlencoded","Content-Length": postData.length}
+	}
+	
+	var result = "";	
+
+	try {
+			
+		var req = https.request(options, function(res) {
+			res.setEncoding('utf8');
+			res.on('data', function (chunk) {
+				result = result+chunk;
+			}).on('end', function(huh){
+				TOKEN = JSON.parse(result).token;
+				console.log("successfully retrieved token!");
+				// do it again later			
+				setTimeout(function(){getToken()}, TOKEN_FETCH_INTERVAL_MINUTES * 60 * 1000);
+				// call back, if appropriate
+				if (callBack) callBack();
+			});
+		});
+	
+		req.on('error', function(e) {
+			console.log("uh-oh...error in token request");
+			// try again in a minute			
+			setTimeout(function(){getToken()}, 60000);
+		});
+		
+		req.write(postData);
+		req.end();
+	
+	} catch(err) {
+		console.log("problem communicating with token service...");
+		// try again in a minute			
+		setTimeout(function(){getToken()}, 60000);
+	}	
+	
+}
 
 function altQuery(text, callBack)
 {
