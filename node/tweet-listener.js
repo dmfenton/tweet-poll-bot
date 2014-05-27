@@ -38,15 +38,15 @@ function init()
 	
 	stream.on('tweet', function (tweet) {
 		// to do: test for retweet.
-		altQuery(tweet.text, function(location){
+		locationQuery(tweet.text, function(location){
 			if (location) {
 				writeRecord(
 					tweet.id_str, 
 					tweet.user.id, 
 					true,
 					location.name, 
-					location.feature.geometry.x, 
-					location.feature.geometry.y,
+					location.centroid.longitude, 
+					location.centroid.latitude,
 					function(success){
 						writeToLog(
 							tweet.id_str, 
@@ -54,8 +54,8 @@ function init()
 							tweet.text, 
 							success ? 0 : 2, 
 							location.name, 
-							location.feature.geometry.x, 
-							location.feature.geometry.y
+							location.centroid.longitude, 
+							location.centroid.latitude
 						);
 					}
 				);	
@@ -145,36 +145,39 @@ function getToken(callBack)
 	
 }
 
-function altQuery(text, callBack)
+function locationQuery(text, callBack)
 {
-	var placeName = parsePlaceName(text);
-	if (!placeName) callBack(null);
+	var path = encodeURI('/v1/public/yql?q=SELECT * FROM geo.placemaker WHERE documentContent = "'+text+'" AND documentType = "text/plain"&format=json');
 	
-	var url = "http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/find?text="+escape(placeName)+"&maxLocations=6&f=json";	
-	var result = "";	
-	var opts = {host: "geocode.arcgis.com", path: url};
+	var opts = {
+		host: "query.yahooapis.com",
+		path:path
+	}
+	
+	var result = "";
 	
 	var req = http.get(opts, function(res) {
 		res.setEncoding("utf8");
 		res.on('data', function(chunk) {
 			result = result+chunk;
-		}).on('end', function(huh) {
-			var locations = JSON.parse(result).locations;
-			if (locations.length == 0) callBack(null);
-			else callBack(locations[0]);
+		}).on('end', function(huh) {			
+			var json = JSON.parse(result);
+			if (json.query.results.matches == null) {
+				console.log("no matches");
+				callBack(null);
+			} else {
+				var mtch = json.query.results.matches.match;
+				if ( Object.prototype.toString.call( mtch ) === '[object Array]' ) {
+					callBack(mtch[0].place)
+				} else {
+					callBack(mtch.place);
+				}
+			}
+		}).on('error',function(error){
+			console.log("uh-oh...");
+			callBack(null);
 		});
 	});	
-}
-
-function parsePlaceName(text)
-{
-	// find place name
-	var idx = text.indexOf("{");
-	if (idx < 0) return null;
-	var placeName = text.substring(idx+1);
-	idx = placeName.indexOf("}");
-	if (idx < 0) return null;
-	return(placeName.substring(0, idx));
 }
 
 function writeRecord(tweetID, userID, matchStatus, standardizedLocation, x, y, callBack)
