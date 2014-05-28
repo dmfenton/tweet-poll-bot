@@ -47,18 +47,18 @@ function init()
 					tweet.id_str, 
 					tweet.user.id, 
 					true,
-					location.name, 
-					location.centroid.longitude, 
-					location.centroid.latitude,
+					location.placeName, 
+					location.x, 
+					location.y,
 					function(success){
 						writeToLog(
 							tweet.id_str, 
 							tweet.user.id, 
 							tweet.text, 
 							success ? 0 : 2, 
-							location.name, 
-							location.centroid.longitude, 
-							location.centroid.latitude
+							location.placeName, 
+							location.x, 
+							location.y
 						);
 					}
 				);	

@@ -2,6 +2,7 @@ function YQLService()
 {
 	
 	var http = require("http");
+	var GenericLocation = require("./GenericLocation")
 
 	this.locationQuery = function(text, callBack)
 	{
@@ -26,10 +27,11 @@ function YQLService()
 				} else {
 					var mtch = json.query.results.matches.match;
 					if ( Object.prototype.toString.call( mtch ) === '[object Array]' ) {
-						callBack(mtch[0].place)
+						mtch = mtch[0].place;
 					} else {
-						callBack(mtch.place);
+						mtch = mtch.place;
 					}
+					callBack(new GenericLocation(mtch.name, mtch.centroid.longitude, mtch.centroid.latitude))
 				}
 			}).on('error',function(error){
 				console.log("uh-oh...");
