@@ -100,7 +100,7 @@ function init()
 								tweet.id_str, 
 								tweet.user.id, 
 								tweet.text, 
-								success ? 0 : 2, 
+								success ? 1 : 2, 
 								null, 
 								null, 
 								null
