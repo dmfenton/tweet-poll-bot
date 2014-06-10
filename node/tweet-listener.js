@@ -3,9 +3,8 @@ var https = require("https");
 var querystring = require("querystring")
 var Twit = require('twit')
 var os = require("os");
-var YQLService = require("./YQLService");
 
-var service = new YQLService();
+var _service;
 
 if (process.argv.length < 11) {
 	throw("argument required");
@@ -26,12 +25,26 @@ var TOKEN_FETCH_INTERVAL_MINUTES = process.argv[10];
 
 var TOKEN;
 
+var GEOPARSE_METHOD_BRACKET = "bracket";
+var GEOPARSE_METHOD_YQL = "yql";
+var GEOPARSE_METHOD_BOSS = "boss";
+
+_parseMethod = GEOPARSE_METHOD_YQL;
+
 getToken(init);
 
 function init()
 {
 	
 	console.log("init");
+	
+	if (_parseMethod == GEOPARSE_METHOD_BOSS) {
+		var BossService = require("./BossService");
+		_service = new BossService();
+	} else { // GEOPARSE_METHOD_YQL
+		var YQLService = require("./YQLService");
+		_service = new YQLService();
+	}
 	
 	//
 	// filter the public stream by desired hashtag
@@ -41,7 +54,7 @@ function init()
 	
 	stream.on('tweet', function (tweet) {
 		// to do: test for retweet.
-		service.locationQuery(tweet.text, function(location){
+		_service.locationQuery(tweet.text, function(location){
 			if (location) {
 				writeRecord(
 					tweet.id_str, 
