@@ -57,49 +57,60 @@ function init()
 	
 	stream.on('tweet', function (tweet) {
 		// to do: test for retweet.
-		_service.locationQuery(tweet.text, function(location){
-			if (location) {
-				writeRecord(
-					tweet.id_str, 
-					tweet.user.id, 
-					true,
-					location.placeName, 
-					location.x, 
-					location.y,
-					function(success){
-						writeToLog(
-							tweet.id_str, 
-							tweet.user.id, 
-							tweet.text, 
-							success ? 0 : 2, 
-							location.placeName, 
-							location.x, 
-							location.y
-						);
-					}
-				);	
-			} else { // match failed
-				writeRecord(
-					tweet.id_str, 
-					tweet.user.id, 
-					false,
-					null, 
-					null, 
-					null,
-					function(success){
-						writeToLog(
-							tweet.id_str, 
-							tweet.user.id, 
-							tweet.text, 
-							success ? 0 : 2, 
-							null, 
-							null, 
-							null
-						);
-					}
-				);	
-			}
-		});
+
+		if (tweet.retweeted_status) {
+			console.log("retweet");
+		} else {
+			var media = tweet.entities.media != null;
+			_service.locationQuery(tweet.text, function(location){
+				if (location) {
+					writeRecord(
+						tweet.id_str, 
+						tweet.user.id,
+						tweet.text,
+						media,
+						true,
+						location.placeName, 
+						location.x, 
+						location.y,
+						function(success){
+							writeToLog(
+								tweet.id_str, 
+								tweet.user.id, 
+								tweet.text, 
+								success ? 0 : 2, 
+								location.placeName, 
+								location.x, 
+								location.y
+							);
+						}
+					);	
+				} else { // match failed
+					writeRecord(
+						tweet.id_str, 
+						tweet.user.id, 
+						tweet.text,
+						media,
+						false,
+						null, 
+						null, 
+						null,
+						function(success){
+							writeToLog(
+								tweet.id_str, 
+								tweet.user.id, 
+								tweet.text, 
+								success ? 0 : 2, 
+								null, 
+								null, 
+								null
+							);
+						}
+					);	
+				}
+			});
+		}
+
 	});
 	
 	console.log("Tweet poll bot in de heezy!");
@@ -164,14 +175,14 @@ function getToken(callBack)
 	
 }
 
-function writeRecord(tweetID, userID, matchStatus, standardizedLocation, x, y, callBack)
+function writeRecord(tweetID, userID, text, media, matchStatus, standardizedLocation, x, y, callBack)
 {
 	try {
 		var features = [
 			{
 				geometry:{x : x, y : y},
 				spatialReference:{wkid:4326},
-				attributes:{Tweet_ID: tweetID, User_ID: userID, Standardized_Location: standardizedLocation, Short_Name: "Test", X: x, Y: y, Matched: matchStatus, Hide: false}
+				attributes:{Tweet_ID: tweetID, User_ID: userID, Text: text, Media: media, Standardized_Location: standardizedLocation, X: x, Y: y, Matched: matchStatus, Hide: false}
 			}
 		];
 		
