@@ -222,5 +222,5 @@ function writeRecord(tweetID, userID, matchStatus, standardizedLocation, x, y, c
 
 function writeToLog(tweetID, tweetUserID, tweetText, status, locationName, x, y)
 {
-	console.log(tweetID, tweetUserID, tweetText, status, locationName, x, y);
+	console.log(new Date(), tweetID, tweetUserID, tweetText, status, locationName, x, y);
 }
