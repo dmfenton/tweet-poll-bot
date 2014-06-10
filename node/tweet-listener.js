@@ -29,7 +29,7 @@ var GEOPARSE_METHOD_BRACKET = "bracket";
 var GEOPARSE_METHOD_YQL = "yql";
 var GEOPARSE_METHOD_BOSS = "boss";
 
-_parseMethod = GEOPARSE_METHOD_YQL;
+_parseMethod = process.argv[11];
 
 getToken(init);
 
@@ -37,13 +37,15 @@ function init()
 {
 	
 	console.log("init");
-	
+	console.log("parseMethod", _parseMethod)
 	if (_parseMethod == GEOPARSE_METHOD_BOSS) {
 		var BossService = require("./BossService");
-		_service = new BossService();
+		_service = new BossService(process.argv[12], process.argv[13]);
+		console.log("initialized boss service");
 	} else { // GEOPARSE_METHOD_YQL
 		var YQLService = require("./YQLService");
 		_service = new YQLService();
+		console.log("initialized yql service");
 	}
 	
 	//

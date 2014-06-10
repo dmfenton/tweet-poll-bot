@@ -14,6 +14,7 @@ function BossService(key, secret)
 		
 		_bossGeoClient.placespotter(opts, function handler(err, res) {
 			if (err) {
+				console.log("boss error:", err)
 				callBack(null);
 			} else {
 				try {
