@@ -3,7 +3,6 @@ var https = require("https");
 var querystring = require("querystring")
 var Twit = require('twit')
 var os = require("os");
-var fs = require("fs");
 
 var _service;
 
@@ -235,10 +234,4 @@ function writeRecord(tweetID, userID, text, media, matchStatus, standardizedLoca
 function writeToLog(tweetID, tweetUserID, tweetText, status, locationName, x, y)
 {
 	console.log(new Date(), tweetID, tweetUserID, tweetText, status, locationName, x, y);
-	var logString = new Date()+", "+tweetID+", "+tweetUserID+", "+tweetText+", "+status+", "+locationName+", "+x+", "+y
-	fs.writeFile("log.txt", logString, function(err){
-		if (err) {
-			console.log("file error:", err);
-		}
-	});
 }
