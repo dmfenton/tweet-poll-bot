@@ -22,7 +22,6 @@ function YQLService()
 			}).on('end', function(huh) {			
 				var json = JSON.parse(result);
 				if (json.query.results.matches == null) {
-					console.log("no matches");
 					callBack(null);
 				} else {
 					var mtch = json.query.results.matches.match;
