@@ -58,11 +58,13 @@ function init()
 		// to do: test for retweet.
 
 		if (tweet.retweeted_status) {
-			console.log("retweet");
+			console.log(new Date(), "retweet: ", tweet.id_str, tweet.user.id, tweet.text);
 		} else {
 			var media = tweet.entities.media != null;
+			console.log(new Date(), "attempting: ", tweet.id_str, tweet.user.id, tweet.text, media);
 			_service.locationQuery(tweet.text, function(location){
 				if (location) {
+					console.log("match successful: ", location.placeName, location.x, location.y);
 					writeRecord(
 						tweet.id_str, 
 						tweet.user.id,
@@ -73,71 +75,62 @@ function init()
 						location.x, 
 						location.y,
 						function(success){
-							writeToLog(
-								tweet.id_str, 
-								tweet.user.id, 
-								tweet.text, 
-								success ? 0 : 2, 
-								location.placeName, 
-								location.x, 
-								location.y
-							);
+							if (!success) console.log("WRITE FAILED!");
 						}
 					);	
 				} else { // match failed
-				
-					// there was no discernable location in the tweet body.  let's see if there's
-					// a location associated with the user
-										
-					_service.locationQuery(tweet.user.location, function(profileLocation){
-						if (profileLocation) {
-							writeRecord(
-								tweet.id_str, 
-								tweet.user.id,
-								tweet.text,
-								media,
-								true,
-								profileLocation.placeName, 
-								profileLocation.x, 
-								profileLocation.y,
-								function(success){
-									writeToLog(
-										tweet.id_str, 
-										tweet.user.id, 
-										tweet.text, 
-										success ? 0 : 2, 
-										profileLocation.placeName, 
-										profileLocation.x, 
-										profileLocation.y
-									);
-								}
-							);	
-						} else {
-							writeRecord(
-								tweet.id_str, 
-								tweet.user.id, 
-								tweet.text,
-								media,
-								false,
-								null, 
-								null, 
-								null,
-								function(success){
-									writeToLog(
-										tweet.id_str, 
-										tweet.user.id, 
-										tweet.text, 
-										success ? 1 : 2, 
-										null, 
-										null, 
-										null
-									);
-								}
-							);
-						}
-					});
-				
-						
+					console.log("match failed.");
+					if (tweet.user.location) {
+						console.log("trying profile location", tweet.user.location);
+						_service.locationQuery(tweet.user.location, function(profileLocation){
+							if (profileLocation) {
+								console.log("profile location match successful: ", profileLocation.placeName, profileLocation.x, profileLocation.y);
+								writeRecord(
+									tweet.id_str, 
+									tweet.user.id,
+									tweet.text,
+									media,
+									true,
+									profileLocation.placeName, 
+									profileLocation.x, 
+									profileLocation.y,
+									function(success){
+										if (!success) console.log("WRITE FAILED!");									
+									}
+								);	
+							} else {
+								console.log("profile location match failed.");
+								writeRecord(
+									tweet.id_str, 
+									tweet.user.id, 
+									tweet.text,
+									media,
+									false,
+									null, 
+									null, 
+									null,
+									function(success){
+										if (!success) console.log("WRITE FAILED!");									
+									}	
+								);
+							}
+						});						
+
+					} else {
+						writeRecord(
+							tweet.id_str, 
+							tweet.user.id, 
+							tweet.text,
+							media,
+							false,
+							null, 
+							null, 
+							null,
+							function(success){
+								if (!success) console.log("WRITE FAILED!");
+							}
+						);	
+					}
 				}
 			});
 		}
@@ -271,9 +264,4 @@ function writeRecord(tweetID, userID, text, media, matchStatus, standardizedLoca
 		callBack(false)
 	}
 	
-}
-
-function writeToLog(tweetID, tweetUserID, tweetText, status, locationName, x, y)
-{
-	console.log(new Date(), tweetID, tweetUserID, tweetText, status, locationName, x, y);
 }
