@@ -213,7 +213,17 @@ function writeRecord(tweetID, userID, text, media, matchStatus, standardizedLoca
 			{
 				geometry:{x : x, y : y},
 				spatialReference:{wkid:4326},
-				attributes:{Tweet_ID: tweetID, User_ID: userID, Text: text, Media: media, Standardized_Location: standardizedLocation, X: x, Y: y, Matched: matchStatus, Hide: false}
+				attributes:{
+					Tweet_ID: tweetID, 
+					User_ID: userID, 
+					Text: text, 
+					Media: media, 
+					Standardized_Location: standardizedLocation, 
+					X: x, Y: y, 
+					Matched: matchStatus, 
+					Vetted: "U", 
+					Hide: false
+				}
 			}
 		];
 		
