@@ -85,27 +85,59 @@ function init()
 						}
 					);	
 				} else { // match failed
-					writeRecord(
-						tweet.id_str, 
-						tweet.user.id, 
-						tweet.text,
-						media,
-						false,
-						null, 
-						null, 
-						null,
-						function(success){
-							writeToLog(
+				
+					// there was no discernable location in the tweet body.  let's see if there's
+					// a location associated with the user
+										
+					_service.locationQuery(tweet.user.location, function(profileLocation){
+						if (profileLocation) {
+							writeRecord(
+								tweet.id_str, 
+								tweet.user.id,
+								tweet.text,
+								media,
+								true,
+								profileLocation.placeName, 
+								profileLocation.x, 
+								profileLocation.y,
+								function(success){
+									writeToLog(
+										tweet.id_str, 
+										tweet.user.id, 
+										tweet.text, 
+										success ? 0 : 2, 
+										profileLocation.placeName, 
+										profileLocation.x, 
+										profileLocation.y
+									);
+								}
+							);	
+						} else {
+							writeRecord(
 								tweet.id_str, 
 								tweet.user.id, 
-								tweet.text, 
-								success ? 1 : 2, 
+								tweet.text,
+								media,
+								false,
 								null, 
 								null, 
-								null
+								null,
+								function(success){
+									writeToLog(
+										tweet.id_str, 
+										tweet.user.id, 
+										tweet.text, 
+										success ? 1 : 2, 
+										null, 
+										null, 
+										null
+									);
+								}
 							);
 						}
-					);	
+					});
+				
+						
 				}
 			});
 		}
