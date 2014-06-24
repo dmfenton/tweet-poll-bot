@@ -55,12 +55,13 @@ function init()
 	var stream = T.stream('statuses/filter', {track: TRACK_TEXT})
 	
 	stream.on('tweet', function (tweet) {
-		// to do: test for retweet.
-
+		// test for retweet.
 		if (tweet.retweeted_status) {
 			console.log(new Date(), "retweet: ", tweet.id_str, tweet.user.id, tweet.text);
 		} else {
 			var media = tweet.entities.media != null;
+			// to do: test for whether tweet is geolocated i.e. 
+			// if (tweet.coordinates)
 			console.log(new Date(), "attempting: ", tweet.id_str, tweet.user.id, tweet.text, media);
 			_service.locationQuery(tweet.text, function(location){
 				if (location) {
