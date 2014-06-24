@@ -21,16 +21,21 @@ function YQLService()
 				result = result+chunk;
 			}).on('end', function(huh) {			
 				var json = JSON.parse(result);
-				if (json.query.results.matches == null) {
+				if (json.query == null) {
+					console.log("null query results");
 					callBack(null);
 				} else {
-					var mtch = json.query.results.matches.match;
-					if ( Object.prototype.toString.call( mtch ) === '[object Array]' ) {
-						mtch = mtch[0].place;
+					if (json.query.results.matches == null) {
+						callBack(null);
 					} else {
-						mtch = mtch.place;
+						var mtch = json.query.results.matches.match;
+						if ( Object.prototype.toString.call( mtch ) === '[object Array]' ) {
+							mtch = mtch[0].place;
+						} else {
+							mtch = mtch.place;
+						}
+						callBack(new GenericLocation(mtch.name, mtch.centroid.longitude, mtch.centroid.latitude))
 					}
-					callBack(new GenericLocation(mtch.name, mtch.centroid.longitude, mtch.centroid.latitude))
 				}
 			}).on('error',function(error){
 				console.log("uh-oh...");
