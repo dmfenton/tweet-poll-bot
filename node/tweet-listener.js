@@ -43,7 +43,7 @@ function init()
 		var BossService = require("./BossService");
 		_service = new BossService(process.argv[12], process.argv[13]);
 		console.log("initialized boss service");
-	} else if (_parseMethod === GEOPARSE_ESRI) {
+	} else if (_parseMethod === GEOPARSE_METHOD_ESRI) {
 		var EsriService = require ("./EsriService");
 		getGeoToken(process.argv[12], process.argv[13]);
 		_service = new EsriService(GEOTOKEN);
