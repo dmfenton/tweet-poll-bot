@@ -28,6 +28,7 @@ var TOKEN;
 var GEOPARSE_METHOD_BRACKET = "bracket";
 var GEOPARSE_METHOD_YQL = "yql";
 var GEOPARSE_METHOD_BOSS = "boss";
+var GEOPARSE_METHOD_ESRI = "esri";
 
 _parseMethod = process.argv[11];
 
@@ -42,6 +43,10 @@ function init()
 		var BossService = require("./BossService");
 		_service = new BossService(process.argv[12], process.argv[13]);
 		console.log("initialized boss service");
+	} else if (_parseMethod === GEOPARSE_ESRI) 
+		var EsriService = require ("./EsriService");
+		getGeoToken(process.argv[12], process.argv[13]);
+		_service = new EsriService(GEOTOKEN);
 	} else { // GEOPARSE_METHOD_YQL
 		var YQLService = require("./YQLService");
 		_service = new YQLService();
@@ -59,6 +64,7 @@ function init()
 		if (tweet.retweeted_status) {
 			console.log(new Date(), "retweet: ", tweet.id_str, tweet.user.id, tweet.text);
 		} else {
+			if (_parseMethod != GEOPARSE_METHOD_ESRI){
 			var media = tweet.entities.media != null;
 			// to do: test for whether tweet is geolocated i.e. 
 			// if (tweet.coordinates)
@@ -79,7 +85,7 @@ function init()
 							if (!success) console.log("WRITE FAILED!");
 						}
 					);	
-				} else { // match failed
+				};} else { // match failed
 					console.log("match failed.");
 					if (tweet.user.location) {
 						console.log("trying profile location", tweet.user.location);
@@ -200,6 +206,49 @@ function getToken(callBack)
 	
 }
 
+function getGeoToken(callBack)
+{
+	
+	path = '/sharing/oauth2/token?client_id=' + CLIENT_ID + '&grant_type=client_credentials&client_secret=' + CLIENT_SECRET + '&f=pjson'
+	
+	var options = {
+		host: "www.arcgis.com",
+		path: path
+	}
+	
+	var result = "";	
+
+	try {
+			
+		var req = https.get(options, function(res) {
+			res.setEncoding('utf8');
+			res.on('data', function (chunk) {
+				result = result+chunk;
+			}).on('end', function(huh){
+				GEOTOKEN = JSON.parse(result).access_token;
+				console.log("successfully retrieved token!");
+				// do it again later			
+				setTimeout(function(){getGeoToken()}, TOKEN_FETCH_INTERVAL_MINUTES * 60 * 1000);
+				// call back, if appropriate
+				if (callBack) callBack();
+			});
+		});
+	
+		req.on('error', function(e) {
+			console.log("uh-oh...error in geo token request");
+			// try again in a minute			
+			setTimeout(function(){getGeoToken()}, 60000);
+		});
+		
+		req.end();
+	
+	} catch(err) {
+		console.log("problem communicating with geo token service...");
+		// try again in a minute			
+		setTimeout(function(){getGeoToken()}, 60000);
+	}	
+	
+}
 function writeRecord(tweetID, userID, text, media, matchStatus, standardizedLocation, x, y, callBack)
 {
 	try {
