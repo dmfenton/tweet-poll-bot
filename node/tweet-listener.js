@@ -212,7 +212,7 @@ function writeRecord(tweetID, userID, text, media, matchStatus, standardizedLoca
 					User_ID: userID, 
 					Text: text, 
 					Media: media, 
-					Standardized_Location: standardizedLocation, 
+					Standardize: standardizedLocation, 
 					X: x, Y: y, 
 					Matched: matchStatus, 
 					Vetted: "U", 
