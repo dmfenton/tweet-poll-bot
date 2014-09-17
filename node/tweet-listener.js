@@ -197,7 +197,7 @@ function getGeoToken(CLIENT_ID, CLIENT_SECRET)
 {
 	
 	path = '/sharing/oauth2/token?client_id=' + CLIENT_ID + '&grant_type=client_credentials&client_secret=' + CLIENT_SECRET + '&f=pjson'
-	
+	console.log(path)
 	var options = {
 		host: "www.arcgis.com",
 		path: path
@@ -212,6 +212,7 @@ function getGeoToken(CLIENT_ID, CLIENT_SECRET)
 			res.on('data', function (chunk) {
 				result = result+chunk;
 			}).on('end', function(huh){
+				console.log(JSON.parse(result))
 				GEOTOKEN = JSON.parse(result).access_token;
 				console.log("successfully geo retrieved token!");
 				// do it again later			
