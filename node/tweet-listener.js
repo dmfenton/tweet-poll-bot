@@ -230,9 +230,7 @@ function getGeoToken(CLIENT_ID, CLIENT_SECRET)
 				GEOTOKEN = JSON.parse(result).access_token;
 				console.log("successfully retrieved token!");
 				// do it again later			
-				setTimeout(function(){getGeoToken()}, TOKEN_FETCH_INTERVAL_MINUTES * 60 * 1000);
-				// call back, if appropriate
-				if (callBack) callBack();
+				setTimeout(function(){getGeoToken()}, TOKEN_FETCH_INTERVAL_MINUTES * 60 * 1000);			
 			});
 		});
 	
