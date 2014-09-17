@@ -1,9 +1,9 @@
 function EsriService(GEOTOKEN)
 {
-	var GEOTOKEN = GEOTOKEN
+	var GEOTOKEN = GEOTOKEN;
 	var http = require("http");
 	var GenericLocation = require("./GenericLocation")
-
+	console.log('what is the geotoken in the esriservice? ' +GEOTOKEN)
 	this.locationQuery = function(text, callBack)
 	{
 		console.log('what is the geotoken in the esriservice? ' +GEOTOKEN)
