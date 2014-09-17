@@ -6,6 +6,7 @@ function EsriService(GEOTOKEN)
 
 	this.locationQuery = function(text, callBack)
 	{
+		console.log('what is the geotoken in the esriservice? ' +GEOTOKEN)
 		var path = encodeURI('/arcgis/rest/services/World/GeocodeServer/find?forStorage=true&token=' + GEOTOKEN + '&text=' + text + '&f=json');
 		
 		var opts = {
