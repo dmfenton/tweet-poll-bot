@@ -71,8 +71,6 @@ function init()
 				
 				console.log(new Date(), "attempting: ", tweet.id_str, tweet.user.id, tweet.text, media);
 				_service.locationQuery(tweet.text, function(location){
-				if (_parseMethod != GEOPARSE_METHOD_ESRI){
-					if (location) {
 						console.log("match successful: ", location.placeName, location.x, location.y);
 						writeRecord(
 							tweet.id_str, 
@@ -87,7 +85,7 @@ function init()
 								if (!success) console.log("WRITE FAILED!");
 							}
 						);	
-					}} else { // match failed
+					} else { // match failed
 						console.log("text match failed.");
 						if (tweet.user.location) {
 							console.log("trying profile location", tweet.user.location);
