@@ -24,6 +24,7 @@ var PASSWORD = process.argv[9];
 var TOKEN_FETCH_INTERVAL_MINUTES = process.argv[10];
 
 var TOKEN;
+var GEOTOKEN;
 
 var GEOPARSE_METHOD_BRACKET = "bracket";
 var GEOPARSE_METHOD_YQL = "yql";
