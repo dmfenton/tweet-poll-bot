@@ -1,6 +1,6 @@
 function EsriService(GEOTOKEN)
 {
-	
+	var GEOTOKEN = GEOTOKEN
 	var http = require("http");
 	var GenericLocation = require("./GenericLocation")
 
