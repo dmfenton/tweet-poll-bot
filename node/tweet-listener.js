@@ -212,8 +212,9 @@ function getGeoToken(CLIENT_ID, CLIENT_SECRET)
 			res.on('data', function (chunk) {
 				result = result+chunk;
 			}).on('end', function(huh){
-				console.log(JSON.parse(result))
-				GEOTOKEN = JSON.parse(result).access_token;
+				GEOTOKEN = JSON.parse(result);
+				GEOTOKEN = GEOTOKEN.access_token;
+				console.log('geotoken is ' + GEOTOKEN)
 				console.log("successfully geo retrieved token!");
 				// do it again later			
 				setTimeout(function(){getGeoToken()}, TOKEN_FETCH_INTERVAL_MINUTES * 60 * 1000);			
