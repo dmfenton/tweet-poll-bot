@@ -207,7 +207,7 @@ function getToken(callBack)
 	
 }
 
-function getGeoToken(callBack)
+function getGeoToken(CLIENT_ID, CLIENT_SECRET)
 {
 	
 	path = '/sharing/oauth2/token?client_id=' + CLIENT_ID + '&grant_type=client_credentials&client_secret=' + CLIENT_SECRET + '&f=pjson'
