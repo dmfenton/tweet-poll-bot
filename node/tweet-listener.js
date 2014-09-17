@@ -72,25 +72,32 @@ function init()
 		// if (tweet.coordinates)
 		console.log(new Date(), "attempting: ", tweet.id_str, tweet.user.id, tweet.text, media);
 		_service.locationQuery(tweet.text, function(location){
-			if (location) {
-				console.log("match successful: ", location.placeName, location.x, location.y);
-				writeRecord(
-					tweet.id_str, 
-					tweet.user.id,
-					tweet.text,
-					media,
-					true,
-					location.placeName, 
-					location.x, 
-					location.y,
-					function(success){
-						if (!success) console.log("WRITE FAILED!");
-					}
-				);	
-				return false;
+			if (_parseMethod != GEOPARSE_METHOD_ESRI){
+				if (location) {
+					console.log("match successful: ", location.placeName, location.x, location.y);
+					writeRecord(
+						tweet.id_str, 
+						tweet.user.id,
+						tweet.text,
+						media,
+						true,
+						location.placeName, 
+						location.x, 
+						location.y,
+						function(success){
+							if (!success) console.log("WRITE FAILED!");
+						}
+					);	
+					return false;
+					console.log("match failed.");
+				}
+
 			}
+			else{
+				return false
 			// match failed
 			console.log("match failed.");
+			}
 			if (!tweet.user.location) {
 				console.log("no profile location -- writing nulls...");
 				writeNulls(tweet, media);
