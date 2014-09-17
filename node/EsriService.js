@@ -6,7 +6,7 @@ function EsriService(GEOTOKEN)
 
 	this.locationQuery = function(text, callBack)
 	{
-		var path = encodeURI('arcgis/rest/services/World/GeocodeServer/find?forStorage=true&token=' + GEOTOKEN + '&text=' + text + '&f=json');
+		var path = encodeURI('/arcgis/rest/services/World/GeocodeServer/find?forStorage=true&token=' + GEOTOKEN + '&text=' + text + '&f=json');
 		
 		var opts = {
 			host: "geocode.arcgis.com",
@@ -19,7 +19,7 @@ function EsriService(GEOTOKEN)
 			res.setEncoding("utf8");
 			res.on('data', function(chunk) {
 				result = result+chunk;
-				console.log(result)
+				console.log(result);
 			}).on('end', function(huh) {			
 				var json = JSON.parse(result);
 				if (json.query == null) {
