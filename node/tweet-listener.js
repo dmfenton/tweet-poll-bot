@@ -213,7 +213,7 @@ function getGeoToken(CLIENT_ID, CLIENT_SECRET)
 				result = result+chunk;
 			}).on('end', function(huh){
 				GEOTOKEN = JSON.parse(result).access_token;
-				console.log("successfully retrieved token!");
+				console.log("successfully geo retrieved token!");
 				// do it again later			
 				setTimeout(function(){getGeoToken()}, TOKEN_FETCH_INTERVAL_MINUTES * 60 * 1000);			
 			});
