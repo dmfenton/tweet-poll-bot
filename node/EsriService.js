@@ -12,6 +12,7 @@ function EsriService(GEOTOKEN)
 			host: "geocode.arcgis.com",
 			path:path
 		}
+		console.log(path)
 		
 		var result = "";
 		
