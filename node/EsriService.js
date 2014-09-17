@@ -1,13 +1,12 @@
 function EsriService(GEOTOKEN)
 {
-	this.GEOTOKEN = GEOTOKEN;
+	this.token = GEOTOKEN;
 	var http = require("http");
 	var GenericLocation = require("./GenericLocation")
-	console.log('what is the geotoken in the esriservice? ' +GEOTOKEN)
+	console.log('what is the geotoken in the esriservice? ' + this.token)
 	this.locationQuery = function(text, callBack)
 	{
-		console.log('what is the geotoken in the esriservice? ' +GEOTOKEN)
-		var path = encodeURI('/arcgis/rest/services/World/GeocodeServer/find?forStorage=true&token=' + GEOTOKEN + '&text=' + text + '&f=json');
+		var path = encodeURI('/arcgis/rest/services/World/GeocodeServer/find?forStorage=true&token=' + token + '&text=' + text + '&f=json');
 		
 		var opts = {
 			host: "geocode.arcgis.com",
