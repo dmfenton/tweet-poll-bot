@@ -19,7 +19,7 @@ function EsriService(GEOTOKEN)
 			res.setEncoding("utf8");
 			res.on('data', function(chunk) {
 				result = result+chunk;
-				console.log result
+				console.log(result)
 			}).on('end', function(huh) {			
 				var json = JSON.parse(result);
 				if (json.query == null) {
