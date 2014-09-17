@@ -64,83 +64,84 @@ function init()
 		if (tweet.retweeted_status) {
 			console.log(new Date(), "retweet: ", tweet.id_str, tweet.user.id, tweet.text);
 		} else {
-			if (_parseMethod != GEOPARSE_METHOD_ESRI){
-			var media = tweet.entities.media != null;
-			// to do: test for whether tweet is geolocated i.e. 
-			// if (tweet.coordinates)
-			console.log(new Date(), "attempting: ", tweet.id_str, tweet.user.id, tweet.text, media);
-			_service.locationQuery(tweet.text, function(location){
-				if (location) {
-					console.log("match successful: ", location.placeName, location.x, location.y);
-					writeRecord(
-						tweet.id_str, 
-						tweet.user.id,
-						tweet.text,
-						media,
-						true,
-						location.placeName, 
-						location.x, 
-						location.y,
-						function(success){
-							if (!success) console.log("WRITE FAILED!");
-						}
-					);	
-				};} else { // match failed
-					console.log("match failed.");
-					if (tweet.user.location) {
-						console.log("trying profile location", tweet.user.location);
-						_service.locationQuery(tweet.user.location, function(profileLocation){
-							if (profileLocation) {
-								console.log("profile location match successful: ", profileLocation.placeName, profileLocation.x, profileLocation.y);
-								writeRecord(
-									tweet.id_str, 
-									tweet.user.id,
-									tweet.text,
-									media,
-									true,
-									profileLocation.placeName, 
-									profileLocation.x, 
-									profileLocation.y,
-									function(success){
-										if (!success) console.log("WRITE FAILED!");									
-									}
-								);	
-							} else {
-								console.log("profile location match failed.");
-								writeRecord(
-									tweet.id_str, 
-									tweet.user.id, 
-									tweet.text,
-									media,
-									false,
-									null, 
-									null, 
-									null,
-									function(success){
-										if (!success) console.log("WRITE FAILED!");									
-									}	
-								);
-							}
-						});						
-
-					} else {
+				var media = tweet.entities.media != null;
+				// to do: test for whether tweet is geolocated i.e. 
+				// if (tweet.coordinates)
+				
+				console.log(new Date(), "attempting: ", tweet.id_str, tweet.user.id, tweet.text, media);
+				_service.locationQuery(tweet.text, function(location){
+				if (_parseMethod != GEOPARSE_METHOD_ESRI){
+					if (location) {
+						console.log("match successful: ", location.placeName, location.x, location.y);
 						writeRecord(
 							tweet.id_str, 
-							tweet.user.id, 
+							tweet.user.id,
 							tweet.text,
 							media,
-							false,
-							null, 
-							null, 
-							null,
+							true,
+							location.placeName, 
+							location.x, 
+							location.y,
 							function(success){
 								if (!success) console.log("WRITE FAILED!");
 							}
 						);	
+					}} else { // match failed
+						console.log("text match failed.");
+						if (tweet.user.location) {
+							console.log("trying profile location", tweet.user.location);
+							_service.locationQuery(tweet.user.location, function(profileLocation){
+								if (profileLocation) {
+									console.log("profile location match successful: ", profileLocation.placeName, profileLocation.x, profileLocation.y);
+									writeRecord(
+										tweet.id_str, 
+										tweet.user.id,
+										tweet.text,
+										media,
+										true,
+										profileLocation.placeName, 
+										profileLocation.x, 
+										profileLocation.y,
+										function(success){
+											if (!success) console.log("WRITE FAILED!");									
+										}
+									);	
+								} else {
+									console.log("profile location match failed.");
+									writeRecord(
+										tweet.id_str, 
+										tweet.user.id, 
+										tweet.text,
+										media,
+										false,
+										null, 
+										null, 
+										null,
+										function(success){
+											if (!success) console.log("WRITE FAILED!");									
+										}	
+									);
+								}
+							});						
+
+						} else {
+							writeRecord(
+								tweet.id_str, 
+								tweet.user.id, 
+								tweet.text,
+								media,
+								false,
+								null, 
+								null, 
+								null,
+								function(success){
+									if (!success) console.log("WRITE FAILED!");
+								}
+							);	
+						}
 					}
-				}
-			});
-		}
+				});
+			}
 
 	});
 	
