@@ -31,7 +31,7 @@ var GEOPARSE_METHOD_YQL = "yql";
 var GEOPARSE_METHOD_BOSS = "boss";
 var GEOPARSE_METHOD_ESRI = "esri";
 
-_parseMethod = process.argv[11];
+var _parseMethod = process.argv[11];
 
 getToken(init);
 
@@ -44,7 +44,7 @@ function init()
 		var BossService = require("./BossService");
 		_service = new BossService(process.argv[12], process.argv[13]);
 		console.log("initialized boss service");
-	} else if (_parseMethod === GEOPARSE_METHOD_ESRI) {
+	} else if (_parseMethod == GEOPARSE_METHOD_ESRI) {
 		var EsriService = require ("./EsriService");
 		GEOTOKEN = getGeoToken(process.argv[12], process.argv[13]);
 		_service = new EsriService(GEOTOKEN);
@@ -72,7 +72,7 @@ function init()
 		// if (tweet.coordinates)
 		console.log(new Date(), "attempting: ", tweet.id_str, tweet.user.id, tweet.text, media);
 		_service.locationQuery(tweet.text, function(location){
-			if (_parseMethod != GEOPARSE_METHOD_ESRI){
+			if (_parseMethod != "esri"){
 				if (location) {
 					console.log("match successful: ", location.placeName, location.x, location.y);
 					writeRecord(
@@ -215,7 +215,7 @@ function getGeoToken(CLIENT_ID, CLIENT_SECRET)
 				GEOTOKEN = JSON.parse(result);
 				GEOTOKEN = GEOTOKEN.access_token;
 				console.log('geotoken is ' + GEOTOKEN);
-				console.log("successfully geo retrieved token!");
+				console.log("successfully retrieved geo token!");
 				// do it again later			
 				setTimeout(function(){getGeoToken()}, TOKEN_FETCH_INTERVAL_MINUTES * 60 * 1000);			
 			});
