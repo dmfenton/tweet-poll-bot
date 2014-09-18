@@ -279,10 +279,10 @@ function writeRecord(tweetID, userID, text, media, matchStatus, standardizedLoca
 		postData = querystring.stringify(postData);
 		
 		var options = {
-			host: "services.arcgis.com",
+			host: "services3.arcgis.com",
 			method: "POST",
 			port: 80,
-			path: FEATURE_SERVICE.replace("http://services.arcgis.com","")+"/addFeatures",
+			path: FEATURE_SERVICE.replace("http://services3.arcgis.com","")+"/addFeatures",
 			headers:{"Content-Type": "application/x-www-form-urlencoded","Content-Length": postData.length}
 		}
 
