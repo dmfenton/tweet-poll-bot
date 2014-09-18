@@ -33,6 +33,7 @@ var GEOPARSE_METHOD_ESRI = "esri";
 
 var _parseMethod = process.argv[11];
 
+getGeoToken(process.argv[12], process.argv[13]);
 getToken(init);
 
 function init()
@@ -46,7 +47,6 @@ function init()
 		console.log("initialized boss service");
 	} else if (_parseMethod == GEOPARSE_METHOD_ESRI) {
 		var EsriService = require ("./EsriService");
-		GEOTOKEN = getGeoToken(process.argv[12], process.argv[13]);
 		_service = new EsriService(GEOTOKEN);
 	} else { // GEOPARSE_METHOD_YQL
 		var YQLService = require("./YQLService");
@@ -64,15 +64,12 @@ function init()
 		// test for retweet.
 		if (tweet.retweeted_status) {
 			console.log(new Date(), "retweet: ", tweet.id_str, tweet.user.id, tweet.text);
-			return false;
-		}
-
-		var media = tweet.entities.media != null;
-		// to do: test for whether tweet is geolocated i.e. 
-		// if (tweet.coordinates)
-		console.log(new Date(), "attempting: ", tweet.id_str, tweet.user.id, tweet.text, media);
-		_service.locationQuery(tweet.text, function(location){
-			if (_parseMethod != "esri"){
+		} else {
+			var media = tweet.entities.media != null;
+			// to do: test for whether tweet is geolocated i.e. 
+			// if (tweet.coordinates)
+			console.log(new Date(), "attempting: ", tweet.id_str, tweet.user.id, tweet.text, media);
+			_service.locationQuery(tweet.text, function(location){
 				if (location) {
 					console.log("match successful: ", location.placeName, location.x, location.y);
 					writeRecord(
@@ -88,46 +85,62 @@ function init()
 							if (!success) console.log("WRITE FAILED!");
 						}
 					);	
-					return false;
+				} else { // match failed
 					console.log("match failed.");
-				}
+					if (tweet.user.location) {
+						console.log("trying profile location", tweet.user.location);
+						_service.locationQuery(tweet.user.location, function(profileLocation){
+							if (profileLocation) {
+								console.log("profile location match successful: ", profileLocation.placeName, profileLocation.x, profileLocation.y);
+								writeRecord(
+									tweet.id_str, 
+									tweet.user.id,
+									tweet.text,
+									media,
+									true,
+									profileLocation.placeName, 
+									profileLocation.x, 
+									profileLocation.y,
+									function(success){
+										if (!success) console.log("WRITE FAILED!");									
+									}
+								);	
+							} else {
+								console.log("profile location match failed.");
+								writeRecord(
+									tweet.id_str, 
+									tweet.user.id, 
+									tweet.text,
+									media,
+									false,
+									null, 
+									null, 
+									null,
+									function(success){
+										if (!success) console.log("WRITE FAILED!");									
+									}	
+								);
+							}
+						});						
 
-			}
-			else{
-				return false
-			// match failed
-			console.log("match failed.");
-			}
-			if (!tweet.user.location) {
-				console.log("no profile location -- writing nulls...");
-				writeNulls(tweet, media);
-				return false;	
-			}
-			
-			console.log("trying profile location", tweet.user.location);
-			_service.locationQuery(tweet.user.location, function(profileLocation){
-				if (profileLocation) {
-					console.log("profile location match successful: ", profileLocation.placeName, profileLocation.x, profileLocation.y);
-					writeRecord(
-						tweet.id_str, 
-						tweet.user.id,
-						tweet.text,
-						media,
-						true,
-						profileLocation.placeName, 
-						profileLocation.x, 
-						profileLocation.y,
-						function(success){
-							if (!success) console.log("WRITE FAILED!");									
-						}
-					);	
-				} else {
-					console.log("profile location match failed.");
-					writeNulls(tweet, media);
+					} else {
+						writeRecord(
+							tweet.id_str, 
+							tweet.user.id, 
+							tweet.text,
+							media,
+							false,
+							null, 
+							null, 
+							null,
+							function(success){
+								if (!success) console.log("WRITE FAILED!");
+							}
+						);	
+					}
 				}
-			});						
-
-		});
+			});
+		}
 
 	});
 	
@@ -214,7 +227,6 @@ function getGeoToken(CLIENT_ID, CLIENT_SECRET)
 			}).on('end', function(huh){
 				GEOTOKEN = JSON.parse(result);
 				GEOTOKEN = GEOTOKEN.access_token;
-				console.log('geotoken is ' + GEOTOKEN);
 				console.log("successfully retrieved geo token!");
 				// do it again later			
 				setTimeout(function(){getGeoToken()}, TOKEN_FETCH_INTERVAL_MINUTES * 60 * 1000);			
@@ -234,7 +246,7 @@ function getGeoToken(CLIENT_ID, CLIENT_SECRET)
 		// try again in a minute			
 		setTimeout(function(){getGeoToken()}, 60000);
 	}	
-	return GEOTOKEN
+	
 }
 function writeRecord(tweetID, userID, text, media, matchStatus, standardizedLocation, x, y, callBack)
 {
@@ -248,14 +260,15 @@ function writeRecord(tweetID, userID, text, media, matchStatus, standardizedLoca
 					User_ID: userID, 
 					Text: text, 
 					Media: media, 
-					Standardize: standardizedLocation, 
-					X: x, Y: y, 
+					Stand_loc: standardizedLocation, 
+					X_coord: x, Y_coord: y, 
 					Matched: matchStatus, 
 					Vetted: "U", 
 					Hide: false
 				}
 			}
 		];
+		console.log('adding this to the feature server: ' + JSON.stringify(features))
 		
 		var postData = {
 			features:JSON.stringify(features),

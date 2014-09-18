@@ -3,19 +3,15 @@ function EsriService(GEOTOKEN)
 	this.token = GEOTOKEN;
 	var http = require("http");
 	var GenericLocation = require("./GenericLocation")
-	console.log('what is the geotoken in the esriservice? ' + this.token)
 	this.locationQuery = function(text, callBack)
 	{
-		var path = encodeURI('/arcgis/rest/services/World/GeocodeServer/find?forStorage=true&token=' + token + '&text=' + text + '&f=json');
-		
+		var path = encodeURI('/arcgis/rest/services/World/GeocodeServer/find?forStorage=true&token=' + this.token + '&text=' + text + '&f=json');
 		var opts = {
 			host: "geocode.arcgis.com",
 			path:path
 		}
 		console.log(path)
-		
 		var result = "";
-		
 		var req = http.get(opts, function(res) {
 			res.setEncoding("utf8");
 			res.on('data', function(chunk) {
@@ -23,20 +19,17 @@ function EsriService(GEOTOKEN)
 				console.log(result);
 			}).on('end', function(huh) {			
 				var json = JSON.parse(result);
-				if (json.query == null) {
+				if (json == null) {
 					console.log("null query results");
 					callBack(null);
 				} else {
-					if (json.query.locations == []) {
+					console.log(json)
+					if (json.locations.length == 0) {
 						callBack(null);
 					} else {
-						var mtch = json.query.locations.name;
-						if ( Object.prototype.toString.call( mtch ) === '[object Array]' ) {
-							mtch = mtch[0].place;
-						} else {
-							mtch = mtch.name;
-						}
-						callBack(new GenericLocation(mtch.name, mtch.feature.geometry.x, mtch.feature.geometry.x))
+						var mtch = json.locations[0];
+						console.log(mtch.name + ' ' + mtch.feature.geometry.x  + ' ' +  mtch.feature.geometry.y)
+						callBack(new GenericLocation(mtch.name, mtch.feature.geometry.x, mtch.feature.geometry.y))
 					}
 				}
 			}).on('error',function(error){
